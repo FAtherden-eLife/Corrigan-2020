@@ -1,0 +1,160 @@
+---
+output:
+  pdf_document:
+    toc: false
+    includes:
+       in_header: codecheck-preamble.sty
+  html_document:
+    self_contained: false
+    toc: true
+    toc_float: false
+---
+
+```{r rsetup,eval=TRUE,include=FALSE}
+require(codecheck)
+require(knitr)
+require(rprojroot)
+require(yaml)
+require(xtable)
+require(tibble)
+require(readr)
+options(width=60)
+opts_chunk$set(cache=FALSE)
+root = find_root("codecheck.yml")
+```
+
+```{r, echo=FALSE,results='asis'}
+latex_codecheck_logo()
+```
+
+```{r rsetup-knitr,eval=TRUE,include=FALSE}
+metadata = codecheck_metadata(root)
+manifest = metadata$manifest
+dest_dir = file.path(root, "codecheck", "outputs")
+## Create the outputs directory if missing
+if ( !dir.exists(dest_dir) ) {
+  dir.create(dest_dir)
+}
+  
+## get_outputs = function(manifest) {
+##   files = sapply(manifest, function(x) x$file)
+##   comments = sapply(manifest, function(x) x$comment)
+##   sizes = file.size(dest_files)
+##   url=sprintf('<a href="%s">%s</a>', dest_files, files)
+##   table = cbind(files, comments, sizes, url)
+##   table
+## }
+manifest_df = copy_manifest_files(root, manifest,
+                                  dest_dir, keep_full_path=FALSE)
+                                    
+```
+
+---
+title: `r paste("CODECHECK certificate", metadata$certificate)`
+subtitle: `r codecheck:::as_latex_url(metadata$report)`
+---
+
+```{r summary_metadata, echo=FALSE, results='asis'}
+latex_summary_of_metadata(metadata)
+```
+
+```{r summary_manifest, echo=FALSE, results='asis'}
+latex_summary_of_manifest(metadata, manifest_df, root)
+```
+
+
+# Summary
+
+The code was straightforward to check. Each figure had a corresponding R script and took minimal computation time to run. The figures were reproduced with the correct features and formatted as in the eLife paper, with the exception of 1F, which was unable to generate.
+
+\clearpage
+
+# CODECHECKER notes
+
+The original code was provided in the following GitHub repo: https://github.com/banks-lab/Cal-Repository.
+Code was written in R and was self explanatory. The README contained details for each script including the data dependencies. Each figure had its own script which generated each of the plots.
+To run the code I first cloned the repo in a Linux terminal. I then opened each R script in RStudio, and ran them. After each plot was generated I compared them with the corresponding panel in https://elifesciences.org/articles/53560/figures.
+
+All the plots (which are stored in a temporary directory for an R session) were exported to codecheck/outputs using:
+```
+plots.dir.path <- list.files(tempdir(), pattern="rs-graphics", full.names = TRUE); 
+plots.png.paths <- list.files(plots.dir.path, pattern=".png", full.names = TRUE)
+
+file.copy(from=plots.png.paths, to="codecheck/outputs")
+```
+
+1F failed generation with the following error:
+```
+m_calc <- calc.relimp(m_var)
+Error in cov.wt(y, wt = wt) : 'x' must contain finite values only
+> round(m_calc@R2 * 100,digits=2)
+Error: object 'm_calc' not found
+> m_variance <-rownames_to_column(as.data.frame(m_calc$lmg)) %>% 'colnames<-' (c("var","pct")) %>% mutate(pct = pct*100) %>% 
++   arrange(desc(pct))
+Error in as.data.frame(m_calc$lmg) : object 'm_calc' not found
+> #1F
+> m_variance %>% ggplot(aes(reorder(var,-pct),pct))+
++   geom_bar(stat="identity",aes(fill=-pct))+
++   xlab(NULL)+ylab("% of energy expenditure variance") + 
++   theme(legend.position = "none",axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
++   annotate("text",label=expression(R^{2}~"= 72.41%"), x = 4.5, y=22, size = 8) +
++   scale_x_discrete(labels=c("lean mass","fat mass", "locomotor\nactivity","time of day","diet","acclimation"))
+Error in ggplot(., aes(reorder(var, -pct), pct)) : 
+object 'm_variance' not found
+```
+
+
+\clearpage
+
+```{r, out.width = "80%", echo=FALSE, fig.cap=manifest_df[1,"comment"], fig.align="center"}
+knitr::include_graphics(manifest_df[1, "dest"])
+cat('\n\n')
+```
+```{r, echo=FALSE, fig.cap=manifest_df[2:3,"comment"]}
+knitr::include_graphics(manifest_df[2, "dest"])
+cat('\n\n')
+knitr::include_graphics(manifest_df[3, "dest"])
+cat('\n\n')
+```
+
+\clearpage
+
+
+
+## Acknowledgements
+
+CODECHECK is financially supported by the Mozilla foundation.
+
+
+
+<!-- Do not edit below -->
+
+# Citing this document
+
+```{r, results='asis',echo=FALSE}
+cite_certificate(metadata)
+```
+
+# About CODECHECK
+
+This certificate confirms that the codechecker could independently
+reproduce the results of a computational analysis given the data and
+code from a third party.  A CODECHECK does not check whether the
+original computation analysis is correct.  However, as all materials
+required for the reproduction are freely available by following the
+links in this document, the reader can then study for themselves the
+code and data.
+
+
+# About this document
+
+This document was created using [R Markdown](https://rmarkdown.rstudio.com/) using the [`codecheck`](https://github.com/codecheckers/codecheck) R package.
+`make codecheck.pdf` will regenerate the report file.
+
+```{r}
+sessionInfo()
+```
+
+```{r, include=FALSE, eval=FALSE}
+# render this document in RStudio
+rmarkdown::render("codecheck.Rmd", output_format = "pdf_document") 

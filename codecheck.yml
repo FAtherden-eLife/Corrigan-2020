@@ -1,0 +1,22 @@
+---
+version: https://codecheck.org.uk/spec/config/1.0
+
+paper:
+  title: >
+    A big-data approach to understanding metabolic rate and response to obesity in laboratory mice
+  authors:
+    - name: June K Corrigan et al.
+      ORCID: 0000-0002-7514-0177
+  reference: >
+    eLife (2020) 9, e53560
+    https://doi.org/10.7554/eLife.53560
+
+codechecker:
+  - name: Frederick Atherden
+    ORCID: 0000-0002-6048-1470
+
+summary: >
+  The seven figures and accompanying figure supllements from the eLife article "A big-data approach to understanding metabolic rate and response to obesity in laboratory mice" were reproduced using the code provided by the article authors, with the exception of Figure 1F.
+  The code was straightforward to run and took minimal computation time. 
+repository: https://github.com/FAtherden-eLife/Corrigan-2020
+check_time: "2021-02-23 13:00:00"
